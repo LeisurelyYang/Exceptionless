@@ -6,7 +6,6 @@ using Exceptionless.Core.Extensions;
 using Exceptionless.Core.Models;
 using Exceptionless.Core.Repositories.Configuration;
 using FluentValidation;
-using Foundatio.Caching;
 using Foundatio.Repositories;
 using Foundatio.Repositories.Models;
 using Foundatio.Repositories.Options;
@@ -79,6 +78,10 @@ ctx._source.total_occurrences += params.count;";
             string key = GetStackSignatureCacheKey(projectId, signatureHash);
             var hit = await FindOneAsync(q => q.Project(projectId).ElasticFilter(Query<Stack>.Term(s => s.SignatureHash, signatureHash)), o => o.Cache(key)).AnyContext();
             return hit?.Document;
+        }
+
+        public Task<FindResults<Stack>> GetStackByDuplicateSignatureAsync(string duplicateSignature) {
+            return FindAsync(q => q.ElasticFilter(Query<Stack>.Term(s => s.DuplicateSignature, duplicateSignature)));
         }
 
         public Task<FindResults<Stack>> GetIdsByQueryAsync(RepositoryQueryDescriptor<Stack> query, CommandOptionsDescriptor<Stack> options = null) {
